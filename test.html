@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <title>Proof of Concept</title>
+    <style>
+
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="640" height="640"></canvas>
+    <script type ="application/javascript" language="javascript">
+      window.requestAnimFrame = (function() {
+        return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame ||
+            window.msRequestAnimationFrame ||
+            function( /* function */ callback, /* DOMElement */ element) {
+               window.setTimeout(callback, 1000 / 60);
+         };
+      })();
+
+
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var width = canvas.offsetWidth;
+      var height = canvas.offsetHeight;
+      var gameField = new GameField();
+
+      function GameField() {
+        // constructor
+        const GRID_NUM = 16;
+        this.GRID_NUM = GRID_NUM;
+
+        // Create field objects
+        this.cells = new Array(GRID_NUM);
+        for (var i = 0; i < GRID_NUM; i++) {
+          this.cells[i] = new Array(GRID_NUM);
+        }
+
+        //
+        this.cells[6][6] = new Player();
+        this.cells[7][7] = new Slime();
+
+        this.draw = function (width, height) {
+          ctx.fillStyle = 'black';
+
+          var cellWidth = width / GRID_NUM;
+          var cellHeight = height / GRID_NUM;
+          ctx.lineWidth = 1;
+          // drawing grid
+          for (var i = cellWidth; i <= width; i += cellWidth) {
+            ctx.fillRect(i, 0, 1, height);
+          }
+          for (var i = cellHeight; i <= height; i += cellHeight) {
+            ctx.fillRect(0, i, width, 1);
+          }
+
+          // drawing cell
+          for (var y = 0; y < GRID_NUM; y++) {
+            for (var x = 0; x < GRID_NUM; x++) {
+              if (this.cells[y][x] && this.cells[y][x].draw) {
+                ctx.save();
+                ctx.translate(cellWidth * x, cellHeight * y);
+                this.cells[y][x].draw(cellWidth, cellHeight);
+                ctx.restore();
+              }
+            }
+          }
+        }
+      }
+
+      function Player() {
+        this.location = {x:0, y:0};
+
+        this.draw = function(width, height) {
+          var radius = 15;
+
+          ctx.beginPath();
+          ctx.arc(width / 2, height / 2, radius, 0, 2 * Math.PI);
+          ctx.fillStyle = 'green';
+          ctx.fill();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = '#003300';
+          ctx.stroke();
+        }
+      }
+
+      function Slime() {
+
+        this.draw = function(width, height) {
+          var startX = 20;
+          var startY = 5;
+          ctx.fillStyle = 'red';
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.bezierCurveTo(20, 15, 5, 10, 5, 20);
+          ctx.bezierCurveTo(5, 35, 35, 35, 35, 20);
+          ctx.bezierCurveTo(35, 10, 20, 15, startX, startY);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+
+      function animate() {
+        requestAnimFrame(animate);
+        draw();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height); // clear canvas
+        gameField.draw(width, height);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
